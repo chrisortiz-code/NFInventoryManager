@@ -1,0 +1,70 @@
+Database Structure
+
+
+CREATE TABLE IF NOT EXISTS public.dailycheckin
+(
+    product_id integer NOT NULL,
+    year smallint NOT NULL,
+    week smallint NOT NULL,
+    d0_inventory real,
+    d1_inventory real,
+    d2_inventory real,
+    d3_inventory real,
+    d4_inventory real,
+    d5_inventory real,
+    d6_inventory real,
+    CONSTRAINT dailycheckin_pkey PRIMARY KEY (product_id),
+    CONSTRAINT unique_product_week UNIQUE (product_id, year, week),
+    CONSTRAINT dailycheckin_product_id_fkey FOREIGN KEY (product_id)
+        REFERENCES public.products (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE
+)
+
+CREATE TABLE IF NOT EXISTS public.products
+(
+    id integer NOT NULL DEFAULT nextval('products_id_seq'::regclass),
+    article_number character varying(25) COLLATE pg_catalog."default" NOT NULL,
+    description character varying(50) COLLATE pg_catalog."default",
+    department character varying(25) COLLATE pg_catalog."default",
+    category character varying(25) COLLATE pg_catalog."default",
+    active boolean DEFAULT true,
+    CONSTRAINT products_pkey PRIMARY KEY (id),
+    CONSTRAINT products_article_number_key UNIQUE (article_number)
+)
+
+
+
+QUERY PAD
+
+SELECT 
+    DC.year,
+    DC.week,
+    DC.d0_inventory,
+    DC.d1_inventory,
+    DC.d2_inventory,
+    DC.d3_inventory,
+    DC.d4_inventory,
+    DC.d5_inventory,
+    DC.d6_inventory
+FROM 
+    public.dailycheckin DC
+JOIN 
+    public.products P
+ON 
+    P.id = DC.product_id
+WHERE 
+    P.article_number = '21506455' -- Replace with your article_number
+    AND (
+        DC.d0_inventory IS NOT NULL OR
+        DC.d1_inventory IS NOT NULL OR
+        DC.d2_inventory IS NOT NULL OR
+        DC.d3_inventory IS NOT NULL OR
+        DC.d4_inventory IS NOT NULL OR
+        DC.d5_inventory IS NOT NULL OR
+        DC.d6_inventory IS NOT NULL
+    )
+ORDER BY 
+    DC.year, DC.week;
+
+
